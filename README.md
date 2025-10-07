@@ -41,7 +41,7 @@ cp .env.example .env
    - `JIRA_EMAIL`: Your Jira account email
    - `JIRA_API_TOKEN`: Generate from https://id.atlassian.com/manage-profile/security/api-tokens
    - `JIRA_PROJECT_KEYS`: Comma-separated project keys (e.g., PROJ1,PROJ2,PROJ3)
-   - `TEAM_LABELS`: Comma-separated team labels (leave empty to auto-discover)
+   - `TEAM_LABELS`: Comma-separated team labels (leave empty for full project sprint, no team filtering)
    - `GENERATE_COMBINED_SUMMARY`: Set to `true` to generate combined report
 
    **LLM Configuration (Optional - for AI-powered insights):**
@@ -59,11 +59,11 @@ npm start
 
 The agent will:
 1. Fetch the most recently closed sprint from each project
-2. Discover or use configured team labels
-3. Generate individual reports for each team
+2. If team labels are provided: Generate individual reports for each team
+3. If no team labels: Generate one report per project with all sprint issues
 4. Use AI to generate contextual recommendations
-5. Generate a combined summary (if enabled)
-6. Create a PowerPoint presentation with slides for each team
+5. Generate a combined summary (if enabled and multiple reports)
+6. Create a PowerPoint presentation with slides for each report
 
 ### LLM Provider Configuration
 
@@ -93,8 +93,9 @@ LLM_MODEL=anthropic/claude-3.5-sonnet  # Options: anthropic/claude-3.5-sonnet, o
 ```
 Get API key: https://openrouter.ai/keys
 
-### Example Configuration
+### Example Configurations
 
+**Multi-team setup** (generates separate reports for each team):
 ```env
 # Jira Configuration
 JIRA_PROJECT_KEYS=PROJ1,PROJ2,PROJ3
@@ -107,18 +108,35 @@ LLM_API_KEY=sk-proj-your-openai-key-here
 LLM_MODEL=gpt-4o
 ```
 
+**Single project setup** (generates one report per project with all issues):
+```env
+# Jira Configuration
+JIRA_PROJECT_KEYS=PROJ1
+TEAM_LABELS=
+GENERATE_COMBINED_SUMMARY=false
+
+# LLM Configuration (using Anthropic)
+LLM_PROVIDER=anthropic
+LLM_API_KEY=sk-ant-your-anthropic-key-here
+LLM_MODEL=claude-3-5-sonnet-20241022
+```
+
 ## Output Files
 
-For each team, the agent generates:
+**With team labels** - For each team:
 - `output/sprint-summary-{PROJECT}-{TEAM}.json` - Team-specific JSON report
 - `output/sprint-summary-{PROJECT}-{TEAM}.md` - Team-specific Markdown report
 
-If combined summary is enabled:
+**Without team labels** - For each project:
+- `output/sprint-summary-{PROJECT}.json` - Project-wide JSON report
+- `output/sprint-summary-{PROJECT}.md` - Project-wide Markdown report
+
+**Combined summary** (if enabled and multiple reports):
 - `output/sprint-summary-combined.json` - Aggregated JSON report
 - `output/sprint-summary-combined.md` - Aggregated Markdown report
 
-PowerPoint presentation:
-- `output/sprint-summary-presentation.pptx` - Professional slides with overview and team summaries
+**PowerPoint presentation** (always generated):
+- `output/sprint-summary-presentation.pptx` - Professional slides with overview and summaries
 
 ## How It Works
 

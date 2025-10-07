@@ -80,35 +80,28 @@ export class SprintDataCollector {
   async collectAllSprintData(projectKeys, teamLabels) {
     const allSprintData = [];
 
-    // If no team labels specified, discover them from all sprints
-    let teamsToProcess = teamLabels;
+    // If no team labels specified, just get the latest sprint for each project (no team filtering)
     if (!teamLabels || teamLabels.length === 0) {
-      const discoveredLabels = new Set();
+      console.log('No team labels provided - fetching latest sprint for each project without team filtering');
+
       for (const projectKey of projectKeys) {
         try {
-          const boards = await this.jiraClient.getBoards(projectKey);
-          for (const board of boards) {
-            try {
-              const sprints = await this.jiraClient.getSprints(board.id);
-              const closedSprints = sprints.filter(s => s.state === 'closed');
-              if (closedSprints.length > 0) {
-                const labels = await this.jiraClient.getTeamLabelsFromSprint(closedSprints[0].id);
-                labels.forEach(label => discoveredLabels.add(label));
-              }
-            } catch (error) {
-              console.warn(`Warning: Could not fetch sprints for board ${board.name}`);
-            }
+          const sprintData = await this.collectSprintData(projectKey, null);
+          if (sprintData.issues.length > 0) {
+            allSprintData.push(sprintData);
+          } else {
+            console.log(`No issues found in latest sprint for project ${projectKey}, skipping...`);
           }
         } catch (error) {
-          console.warn(`Warning: Could not process project ${projectKey}`);
+          console.warn(`Warning: Could not collect data for project ${projectKey}: ${error.message}`);
         }
       }
-      teamsToProcess = Array.from(discoveredLabels);
-      console.log(`Discovered ${teamsToProcess.length} team labels across all projects: ${teamsToProcess.join(', ')}`);
+
+      return allSprintData;
     }
 
     // Process each team - find their sprint across all projects
-    for (const teamLabel of teamsToProcess) {
+    for (const teamLabel of teamLabels) {
       try {
         const sprintData = await this.collectSprintDataForTeam(projectKeys, teamLabel);
         if (sprintData.issues.length > 0) {

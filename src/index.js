@@ -23,7 +23,7 @@ async function main() {
     const teamLabels = config.getTeamLabels();
     console.log(`✅ Configuration loaded successfully`);
     console.log(`   Projects: ${projectKeys.join(', ')}`);
-    console.log(`   Teams: ${teamLabels.length > 0 ? teamLabels.join(', ') : 'Auto-discover'}\n`);
+    console.log(`   Teams: ${teamLabels.length > 0 ? teamLabels.join(', ') : 'None (latest sprint per project)'}\n`);
 
     // Initialize Jira client
     console.log('🔗 Connecting to Jira...');
@@ -41,9 +41,11 @@ async function main() {
     );
 
     // Collect sprint data for all projects and teams
-    console.log('📊 Collecting sprint data for all projects and teams...');
+    const dataDescription = teamLabels.length > 0 ? 'all projects and teams' : 'latest sprint per project';
+    console.log(`📊 Collecting sprint data for ${dataDescription}...`);
     const allSprintData = await dataCollector.collectAllSprintData(projectKeys, teamLabels);
-    console.log(`✅ Collected data for ${allSprintData.length} team(s)\n`);
+    const entityType = teamLabels.length > 0 ? 'team(s)' : 'project(s)';
+    console.log(`✅ Collected data for ${allSprintData.length} ${entityType}\n`);
 
     if (allSprintData.length === 0) {
       console.warn('⚠️  No sprint data found for any project/team combination');
@@ -53,10 +55,11 @@ async function main() {
     // Process each team's sprint data
     const allSummaries = [];
     const allMetrics = [];
-    console.log('🔄 Processing individual team reports...\n');
+    const reportType = teamLabels.length > 0 ? 'team reports' : 'project reports';
+    console.log(`🔄 Processing individual ${reportType}...\n`);
 
     for (const sprintData of allSprintData) {
-      const teamLabel = sprintData.teamLabel || 'No Team';
+      const teamLabel = sprintData.teamLabel || 'All Teams';
       const projectKey = sprintData.projectKey;
 
       console.log(`\n📈 Processing: ${projectKey} - ${teamLabel}`);
@@ -110,7 +113,8 @@ async function main() {
     }
 
     console.log('\n' + '═'.repeat(60));
-    console.log('📊 ALL TEAMS SUMMARY');
+    const summaryTitle = teamLabels.length > 0 ? 'ALL TEAMS SUMMARY' : 'ALL PROJECTS SUMMARY';
+    console.log(`📊 ${summaryTitle}`);
     console.log('═'.repeat(60));
 
     // Print summary table
@@ -126,7 +130,8 @@ async function main() {
 
     // Generate combined summary if configured
     if (config.generateCombinedSummary && allSummaries.length > 1) {
-      console.log('\n📊 Generating combined summary across all teams...');
+      const combinedType = teamLabels.length > 0 ? 'all teams' : 'all projects';
+      console.log(`\n📊 Generating combined summary across ${combinedType}...`);
       const combinedSummary = outputGenerator.generateCombinedSummary(allSummaries);
       await outputGenerator.saveCombinedSummary(combinedSummary, config.outputDir);
       console.log('✅ Combined summary generated');
@@ -144,7 +149,8 @@ async function main() {
 
     console.log('\n' + '═'.repeat(60));
     console.log(`✨ Sprint Summary Agent completed successfully!`);
-    console.log(`   Generated ${allSummaries.length} team report(s)`);
+    const reportCount = teamLabels.length > 0 ? 'team report(s)' : 'project report(s)';
+    console.log(`   Generated ${allSummaries.length} ${reportCount}`);
     console.log(`   Output directory: ${config.outputDir}`);
     console.log('═'.repeat(60));
 
