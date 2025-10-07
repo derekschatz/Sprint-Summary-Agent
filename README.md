@@ -7,7 +7,7 @@ An intelligent agent that gathers data from Jira (using v3 API) and generates co
 - **Multi-Project Support**: Analyze sprints across multiple Jira projects
 - **Team-Based Filtering**: Generate reports for specific teams using labels
 - **Auto-Discovery**: Automatically discovers all team labels in a sprint
-- **AI-Powered Insights**: Uses LLM (via OpenRouter) to generate contextual recommendations and slide content
+- **AI-Powered Insights**: Provider-agnostic LLM integration (OpenAI, Anthropic, OpenRouter) for contextual recommendations and slide content
 - **PowerPoint Generation**: Creates professional presentation slides with 2x2 layout for each team
 - **Individual Team Reports**: Creates separate reports for each team
 - **Combined Summary**: Aggregates metrics across all teams
@@ -43,9 +43,11 @@ cp .env.example .env
    - `JIRA_PROJECT_KEYS`: Comma-separated project keys (e.g., PROJ1,PROJ2,PROJ3)
    - `TEAM_LABELS`: Comma-separated team labels (leave empty to auto-discover)
    - `GENERATE_COMBINED_SUMMARY`: Set to `true` to generate combined report
-   - `LLM_PROVIDER`: Set to `openrouter` for AI-powered insights
-   - `LLM_API_KEY`: Your OpenRouter API key from https://openrouter.ai/keys
-   - `LLM_MODEL`: AI model to use (default: `anthropic/claude-3.5-sonnet`)
+
+   **LLM Configuration (Optional - for AI-powered insights):**
+   - `LLM_PROVIDER`: Choose from `openai`, `anthropic`, or `openrouter` (default: `openrouter`)
+   - `LLM_API_KEY`: Your API key for the chosen provider
+   - `LLM_MODEL`: Model to use (provider-specific, see below)
 
 ## Usage
 
@@ -63,6 +65,34 @@ The agent will:
 5. Generate a combined summary (if enabled)
 6. Create a PowerPoint presentation with slides for each team
 
+### LLM Provider Configuration
+
+The Sprint Summary Agent supports multiple LLM providers for AI-powered insights:
+
+#### OpenAI
+```env
+LLM_PROVIDER=openai
+LLM_API_KEY=sk-...
+LLM_MODEL=gpt-4o  # Options: gpt-4o, gpt-4o-mini, gpt-4-turbo, gpt-3.5-turbo
+```
+Get API key: https://platform.openai.com/api-keys
+
+#### Anthropic (Claude)
+```env
+LLM_PROVIDER=anthropic
+LLM_API_KEY=sk-ant-...
+LLM_MODEL=claude-3-5-sonnet-20241022  # Options: claude-3-5-sonnet-20241022, claude-3-opus-20240229, claude-3-haiku-20240307
+```
+Get API key: https://console.anthropic.com/settings/keys
+
+#### OpenRouter (Multi-Model Gateway)
+```env
+LLM_PROVIDER=openrouter
+LLM_API_KEY=sk-or-v1-...
+LLM_MODEL=anthropic/claude-3.5-sonnet  # Options: anthropic/claude-3.5-sonnet, openai/gpt-4o, google/gemini-pro-1.5
+```
+Get API key: https://openrouter.ai/keys
+
 ### Example Configuration
 
 ```env
@@ -71,10 +101,10 @@ JIRA_PROJECT_KEYS=PROJ1,PROJ2,PROJ3
 TEAM_LABELS=TeamAlpha,TeamBeta,TeamGamma
 GENERATE_COMBINED_SUMMARY=true
 
-# AI Configuration (Optional - for enhanced insights)
-LLM_PROVIDER=openrouter
-LLM_API_KEY=sk-or-v1-your-api-key-here
-LLM_MODEL=anthropic/claude-3.5-sonnet
+# LLM Configuration (using OpenAI)
+LLM_PROVIDER=openai
+LLM_API_KEY=sk-proj-your-openai-key-here
+LLM_MODEL=gpt-4o
 ```
 
 ## Output Files

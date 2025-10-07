@@ -33,7 +33,12 @@ async function main() {
     // Initialize data collector, output generator, and LLM recommendations
     const dataCollector = new SprintDataCollector(jiraClient);
     const outputGenerator = new OutputGenerator();
-    const llmRecommendations = new LLMRecommendationsGenerator(config.openRouterApiKey, config.llmModel);
+    const llmConfig = config.getLLMConfig();
+    const llmRecommendations = new LLMRecommendationsGenerator(
+      llmConfig.provider,
+      llmConfig.apiKey,
+      llmConfig.model
+    );
 
     // Collect sprint data for all projects and teams
     console.log('📊 Collecting sprint data for all projects and teams...');
@@ -129,7 +134,11 @@ async function main() {
 
     // Generate PowerPoint presentation with LLM-powered content
     console.log('\n📊 Generating PowerPoint presentation...');
-    const pptGenerator = new PowerPointGenerator(config.openRouterApiKey, config.llmModel);
+    const pptGenerator = new PowerPointGenerator(
+      llmConfig.provider,
+      llmConfig.apiKey,
+      llmConfig.model
+    );
     await pptGenerator.generatePresentation(allSummaries, allSprintData, allMetrics, config.outputDir);
     console.log('✅ PowerPoint presentation generated');
 

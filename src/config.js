@@ -30,9 +30,10 @@ export class Config {
     this.generateCombinedSummary = process.env.GENERATE_COMBINED_SUMMARY === 'true';
     this.outputDir = process.env.OUTPUT_DIR || './output';
 
-    // LLM API configuration (OpenRouter)
-    this.openRouterApiKey = process.env.LLM_API_KEY || process.env.OPENROUTER_API_KEY;
-    this.llmModel = process.env.LLM_MODEL || 'anthropic/claude-3.5-sonnet';
+    // LLM configuration (provider-agnostic)
+    this.llmProvider = process.env.LLM_PROVIDER || 'openrouter';
+    this.llmApiKey = process.env.LLM_API_KEY;
+    this.llmModel = process.env.LLM_MODEL;
   }
 
   /**
@@ -60,10 +61,19 @@ export class Config {
       );
     }
 
-    // Warn if OpenRouter API key is missing (recommendations will fallback to rule-based)
-    if (!this.openRouterApiKey) {
+    // Warn if LLM API key is missing (recommendations will fallback to rule-based)
+    if (!this.llmApiKey) {
       console.warn(
-        `Warning: OPENROUTER_API_KEY not set. Using rule-based recommendations instead of AI-generated.`
+        `Warning: LLM_API_KEY not set. Using rule-based recommendations instead of AI-generated.`
+      );
+    }
+
+    // Validate provider is supported
+    const supportedProviders = ['openai', 'anthropic', 'openrouter'];
+    if (this.llmProvider && !supportedProviders.includes(this.llmProvider.toLowerCase())) {
+      console.warn(
+        `Warning: Unsupported LLM_PROVIDER: ${this.llmProvider}. ` +
+        `Supported providers: ${supportedProviders.join(', ')}`
       );
     }
 
@@ -93,6 +103,17 @@ export class Config {
    */
   getTeamLabels() {
     return this.teamLabels;
+  }
+
+  /**
+   * Get LLM configuration
+   */
+  getLLMConfig() {
+    return {
+      provider: this.llmProvider,
+      apiKey: this.llmApiKey,
+      model: this.llmModel,
+    };
   }
 }
 

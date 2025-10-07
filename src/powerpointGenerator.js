@@ -9,12 +9,12 @@ import path from 'path';
 import { LLMSummaryGenerator } from './llmSummaryGenerator.js';
 
 export class PowerPointGenerator {
-  constructor(openRouterApiKey, llmModel) {
+  constructor(provider, apiKey, model) {
     this.pptx = new pptxgen();
     this.pptx.author = 'Sprint Summary Agent';
     this.pptx.company = 'International SOS';
     this.pptx.title = 'Sprint Summary Report';
-    this.llmGenerator = new LLMSummaryGenerator(openRouterApiKey, llmModel);
+    this.llmGenerator = new LLMSummaryGenerator(provider, apiKey, model);
   }
 
   /**

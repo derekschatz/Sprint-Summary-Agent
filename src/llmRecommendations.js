@@ -1,49 +1,23 @@
 /**
  * LLM-based Recommendations Generator
- * Uses OpenRouter API to generate context-aware sprint recommendations
+ * Provider-agnostic implementation using LLM abstraction layer
  */
 
+import { createLLMProvider } from './llmProvider.js';
+
 export class LLMRecommendationsGenerator {
-  constructor(apiKey, model) {
-    this.apiKey = apiKey || process.env.LLM_API_KEY || process.env.OPENROUTER_API_KEY;
-    this.model = model || process.env.LLM_MODEL || 'anthropic/claude-3.5-sonnet';
-    this.baseUrl = 'https://openrouter.ai/api/v1';
+  constructor(provider, apiKey, model) {
+    this.llmProvider = createLLMProvider(provider, apiKey, model);
   }
 
   /**
-   * Generate recommendations using LLM via OpenRouter
+   * Generate recommendations using configured LLM provider
    */
   async generateRecommendations(metrics, healthAnalysis, sprintInfo, projectInfo, teamInfo, blockers, accomplishments) {
     const prompt = this.buildPrompt(metrics, healthAnalysis, sprintInfo, projectInfo, teamInfo, blockers, accomplishments);
 
     try {
-      const response = await fetch(`${this.baseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`,
-          'HTTP-Referer': 'https://github.com/yourusername/sprint-summary-agent',
-          'X-Title': 'Sprint Summary Agent',
-        },
-        body: JSON.stringify({
-          model: this.model,
-          messages: [
-            {
-              role: 'user',
-              content: prompt,
-            },
-          ],
-          max_tokens: 1024,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`OpenRouter API error: ${response.status} - ${errorText}`);
-      }
-
-      const data = await response.json();
-      const text = data.choices[0].message.content;
+      const text = await this.llmProvider.generateCompletion(prompt, 1024);
       return this.parseRecommendations(text);
     } catch (error) {
       console.error('Error generating LLM recommendations:', error.message);
@@ -53,7 +27,7 @@ export class LLMRecommendationsGenerator {
   }
 
   /**
-   * Build the prompt for Claude
+   * Build the prompt for LLM
    */
   buildPrompt(metrics, healthAnalysis, sprintInfo, projectInfo, teamInfo, blockers, accomplishments) {
     return `You are an expert Agile coach analyzing a sprint retrospective. Generate 3-5 actionable recommendations based on the following sprint data.
