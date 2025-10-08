@@ -1,0 +1,39 @@
+[project]
+name = "sprint-summary-agent"
+version = "1.0.0"
+description = "Agent to gather Jira sprint data and generate comprehensive sprint summaries"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+keywords = ["jira", "sprint", "agile", "summary", "agent"]
+
+dependencies = [
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+    "jira>=3.5.0",
+    "openai>=1.12.0",
+    "anthropic>=0.18.0",
+    "httpx>=0.26.0",
+    "python-pptx>=0.6.23",
+    "requests>=2.31.0",
+]
+
+[project.scripts]
+sprint-summary = "sprint_summary_agent.main:main"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_backend"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["sprint_summary_agent*"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]

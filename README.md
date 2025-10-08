@@ -26,12 +26,22 @@ An intelligent agent that gathers data from Jira (using v3 API) and generates co
 
 ## Setup
 
-1. Install dependencies:
+### Python Version (Recommended)
+
+1. **Create a virtual environment:**
 ```bash
-npm install
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-2. Configure Jira credentials:
+2. **Install dependencies:**
+```bash
+pip install -r requirements.txt
+# Or using the package:
+pip install -e .
+```
+
+3. **Configure Jira credentials:**
 ```bash
 cp .env.example .env
 ```
@@ -51,7 +61,17 @@ cp .env.example .env
 
 ## Usage
 
-### Analyze Multiple Projects and Teams
+### Python (Recommended)
+
+```bash
+# Run using the module
+python -m sprint_summary_agent.main
+
+# Or if installed as a package
+sprint-summary
+```
+
+### JavaScript (Legacy)
 
 ```bash
 npm start
@@ -150,6 +170,57 @@ LLM_MODEL=claude-3-5-sonnet-20241022
 
 ## Development
 
+### Python Development
+
+```bash
+# Install in development mode
+pip install -e .
+
+# Run with auto-reload (using watchdog)
+pip install watchdog
+watchmedo auto-restart -d sprint_summary_agent -p '*.py' -- python -m sprint_summary_agent.main
+```
+
+### JavaScript Development (Legacy)
+
 ```bash
 npm run dev
+```
+
+## Migration from JavaScript to Python
+
+The project has been converted from JavaScript to Python with the following improvements:
+
+### Key Improvements
+- **Type Safety**: Full type hints using Python's typing system
+- **Better Configuration**: Pydantic Settings for robust environment variable management
+- **Native LLM SDKs**: Official OpenAI and Anthropic Python clients
+- **Cleaner Code**: PEP 8 compliant, proper error handling
+- **Better Package Management**: Standard Python packaging with pyproject.toml
+
+### Project Structure
+```
+sprint_summary_agent/
+├── __init__.py              # Package initialization
+├── main.py                  # Main entry point
+├── settings.py              # Configuration (pydantic-settings)
+├── jira_client.py           # Jira API client
+├── llm_provider.py          # LLM provider abstraction
+├── sprint_data_collector.py # Sprint data collection
+├── llm_recommendations.py   # LLM recommendations generator
+├── llm_summary_generator.py # LLM summary generator
+├── output_generator.py      # JSON/Markdown output
+└── powerpoint_generator.py  # PowerPoint generation
+```
+
+### Running Both Versions
+
+**Python (Recommended):**
+```bash
+python -m sprint_summary_agent.main
+```
+
+**JavaScript (Legacy, still functional):**
+```bash
+npm start
 ```

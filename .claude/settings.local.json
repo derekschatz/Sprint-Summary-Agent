@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(unzip:*)",
+      "Bash(/Applications/Microsoft PowerPoint.app/Contents/MacOS/Microsoft PowerPoint --version)",
+      "Bash(defaults read:*)",
+      "Bash(plutil:*)",
+      "Bash(xattr:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
